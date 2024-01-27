@@ -1,6 +1,7 @@
 const os = require("os");
 const path = require("path");
 const { Worker } = require("worker_threads");
+const { THREADS_PER_CORE } = require("./parameters");
 
 function singleCoreTest(totalOperations) {
     const hrStartTime = process.hrtime();
@@ -33,20 +34,23 @@ function singleCoreTest(totalOperations) {
 
 async function multiCoreTest(totalOperations) {
     const numCores = os.cpus().length;
-    const operationsPerCore = totalOperations / numCores;
+
+    const threads = numCores * Math.floor(THREADS_PER_CORE);
+
+    const operationsPerThread = totalOperations / threads;
     let workers = [];
 
     // to keep track of progress of each core.
-    let overallProgress = new Array(numCores).fill(0);
+    let overallProgress = new Array(threads).fill(0);
 
     const hrStartTime = process.hrtime();
 
-    for (let i = 0; i < numCores; i++) {
+    for (let i = 0; i < threads; i++) {
         workers.push(
             new Promise((resolve, reject) => {
                 // creating a new worker thread.
                 const worker = new Worker(path.join(__dirname, "worker.js"), {
-                    workerData: { operationsPerCore },
+                    workerData: { operationsPerThread },
                 });
 
                 worker.on("message", (message) => {

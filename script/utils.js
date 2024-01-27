@@ -1,5 +1,6 @@
 const readline = require("node:readline/promises");
 const https = require("https");
+const { MULTI_CORE_WEIGHT, DIVISION_FACTOR } = require("./parameters");
 
 // util wrapper over readline.question to add isRequired support.
 const askAsync = async (query, isRequired) => {

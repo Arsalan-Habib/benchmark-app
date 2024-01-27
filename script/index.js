@@ -1,17 +1,23 @@
-const { askAsync, printScoreTable } = require("./utils");
+const {
+    askAsync,
+    printScoreTable,
+    calculateFinalScore,
+    sendScoreUpdate,
+} = require("./utils");
 const { singleCoreTest, multiCoreTest } = require("./coreTests");
-
-const SINGLE_CORE_OPERATIONS = 100_000_000;
-const MULTI_CORE_OPERATIONS = 800_000_000;
+const {
+    SINGLE_CORE_OPERATIONS,
+    MULTI_CORE_OPERATIONS,
+} = require("./parameters");
 
 // Main execution function using async/await
 const main = async () => {
     try {
-        console.log("Welcome to the Dechains computing benchmark test!\n");
+        console.log("\nWelcome to the Dechains computing benchmark test!\n");
 
         const username = await askAsync("Please enter your username: ", true);
 
-        console.log("Running Single Core Test...");
+        console.log("\nRunning Single Core Test...");
         console.time("SingleCoreTest");
         const singleCoreTime = singleCoreTest(SINGLE_CORE_OPERATIONS);
         console.timeEnd("SingleCoreTest");
@@ -28,12 +34,17 @@ const main = async () => {
             MULTI_CORE_OPERATIONS
         );
 
-        const response = await sendScoreUpdate(username, {
-            singleCoreScore,
-            multiCoreScore,
-        });
+        console.log(`\nYour final score is: ${finalScore.toFixed(3)}`);
 
-        printScoreTable(JSON.parse(response).data);
+        // const response = await sendScoreUpdate(username, {
+        //     finalScore,
+        //     singleCoreTime,
+        //     multiCoreTime,
+        //     singleCoreOperations: SINGLE_CORE_OPERATIONS,
+        //     multiCoreOperations: MULTI_CORE_OPERATIONS,
+        // });
+
+        // printScoreTable(JSON.parse(response).data);
 
         // input any key to exit
         await askAsync("\nPress enter key to exit...");
