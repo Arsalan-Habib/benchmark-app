@@ -39,7 +39,9 @@ const main = async () => {
 
         try {
             const response = await sendScoreUpdate(username, {
-                finalScore,
+                overallScore,
+                singleCoreScore,
+                multiCoreScore,
                 singleCoreTime,
                 multiCoreTime,
                 singleCoreOperations: SINGLE_CORE_OPERATIONS,
@@ -47,7 +49,12 @@ const main = async () => {
                 cpuInfo: cpuInfo,
             });
             rank = response.rank;
-        } catch (error) {}
+        } catch (error) {
+            console.error(
+                "An error occurred while sending score:",
+                error.response?.data?.message || error.message
+            );
+        }
 
         const singleCoreTimeInSec = singleCoreTime / 1e9;
         const multiCoreTimeInSec = multiCoreTime / 1e9;
