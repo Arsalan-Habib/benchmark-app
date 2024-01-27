@@ -18,10 +18,10 @@ function singleCoreTest(totalOperations) {
         let sum = num1 + num2;
         if (i % progressInterval === 0) {
             process.stdout.write(
-                `Single Core Test Progress: ${(
+                `\rSingle Core Test Progress: ${(
                     (i / totalOperations) *
                     100
-                ).toFixed(0)}% \r`
+                ).toFixed(0)}% `
             );
         }
     }
@@ -29,7 +29,7 @@ function singleCoreTest(totalOperations) {
     // Clear current line, then move cursor up one line and clear that line.
     // \x1B[A is an ANSI escape code that moves the cursor up one line.
     // \x1B[K clears the line where the cursor currently is.
-    process.stdout.write("\x1B[K\x1B[A\x1B[K");
+    process.stdout.write("\r\x1B[K\x1B[A\x1B[K");
 
     const end = process.hrtime(hrStartTime);
 
@@ -47,6 +47,8 @@ async function multiCoreTest(totalOperations) {
 
     // to keep track of progress of each core.
     let overallProgress = new Array(threads).fill(0);
+
+    console.log("\nRunning Multi-Core Test...");
 
     const hrStartTime = process.hrtime();
 
@@ -68,12 +70,12 @@ async function multiCoreTest(totalOperations) {
                             overallProgress.reduce(
                                 (acc, curr) => acc + curr,
                                 0
-                            ) / numCores;
+                            ) / threads;
 
                         process.stdout.write(
-                            `Multi-Core Test Overall Progress: ${totalProgress.toFixed(
+                            `\rMulti-Core Test Overall Progress: ${totalProgress.toFixed(
                                 0
-                            )}% \r`
+                            )}% `
                         );
                     }
 
@@ -95,8 +97,10 @@ async function multiCoreTest(totalOperations) {
 
     return Promise.all(workers)
         .then((results) => {
-            // Clear the line once done
-            process.stdout.write("".padEnd(50, " ") + "\r");
+            // Clear current line, then move cursor up one line and clear that line.
+            // \x1B[A is an ANSI escape code that moves the cursor up one line.
+            // \x1B[K clears the line where the cursor currently is.
+            process.stdout.write("\r\x1B[K\x1B[A\x1B[K");
 
             const end = process.hrtime(hrStartTime);
 

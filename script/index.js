@@ -1,9 +1,4 @@
-const {
-    askAsync,
-    printScoreTable,
-    calculateFinalScore,
-    sendScoreUpdate,
-} = require("./utils");
+const { askAsync, calculateFinalScore, sendScoreUpdate } = require("./utils");
 const { singleCoreTest, multiCoreTest } = require("./coreTests");
 const {
     SINGLE_CORE_OPERATIONS,
@@ -17,50 +12,58 @@ const main = async () => {
         console.log("\nWelcome to the Dechains computing benchmark test!");
 
         const username = await askAsync("\nPlease enter your username: ", true);
-        console.log(`\x1B[A\x1B[KUsername: ${username}`);
+        console.log(`\x1B[A\x1B[K✅ Username: ${username}`);
 
         console.log("\nGetting system information...");
         const cpuInfo = await si.cpu();
         // clearing the log in the above line and then new success msg, after getting cpuinfo.
-        console.log("\x1B[A\x1B[K✅ System Information");
+        console.log("\x1B[A\x1B[K\x1B[A✅ System Information");
 
-        // console.time("SingleCoreTest");
         const singleCoreTime = singleCoreTest(SINGLE_CORE_OPERATIONS);
-        // console.timeEnd("SingleCoreTest");
-        console.log("\r✅ Single Core Test");
+        console.log("\x1B[A✅ Single Core Test");
 
-        console.log("\nRunning Multi-Core Test...");
-        console.time("MultiCoreTest");
         const multiCoreTime = await multiCoreTest(MULTI_CORE_OPERATIONS);
-        console.timeEnd("MultiCoreTest");
+        console.log("\x1B[A✅ Multi Core Test");
 
-        const finalScore = calculateFinalScore(
-            singleCoreTime,
-            multiCoreTime,
-            SINGLE_CORE_OPERATIONS,
-            MULTI_CORE_OPERATIONS
-        );
+        const { overallScore, singleCoreScore, multiCoreScore } =
+            calculateFinalScore(
+                singleCoreTime,
+                multiCoreTime,
+                SINGLE_CORE_OPERATIONS,
+                MULTI_CORE_OPERATIONS
+            );
 
-        console.log(`\nYour final score is: ${finalScore.toFixed(3)}`);
+        console.log("\nCalculating final score...");
 
-        const strippedCpuInfo = {
-            processor: cpuInfo.manufacturer + " " + cpuInfo.brand,
-            cores: cpuInfo.cores,
+        let rank;
+
+        try {
+            const response = await sendScoreUpdate(username, {
+                finalScore,
+                singleCoreTime,
+                multiCoreTime,
+                singleCoreOperations: SINGLE_CORE_OPERATIONS,
+                multiCoreOperations: MULTI_CORE_OPERATIONS,
+                cpuInfo: cpuInfo,
+            });
+            rank = response.rank;
+        } catch (error) {}
+
+        const singleCoreTimeInSec = singleCoreTime / 1e9;
+        const multiCoreTimeInSec = multiCoreTime / 1e9;
+        const consoleResult = {
+            "Overall Score": overallScore.toFixed(3),
+            ...(rank ? { "Your Rank": rank } : {}),
+            "Single Core Score": singleCoreScore.toFixed(3),
+            "Multi Core Score": multiCoreScore.toFixed(3),
+            "Single Core Time": singleCoreTimeInSec.toFixed(3) + "s",
+            "Multi Core Time": multiCoreTimeInSec.toFixed(3) + "s",
+            Processor: cpuInfo.manufacturer + " " + cpuInfo.brand,
+            Cores: cpuInfo.cores,
         };
 
-        console.log("CPU Information:");
-        console.table(strippedCpuInfo);
-
-        const response = await sendScoreUpdate(username, {
-            finalScore,
-            singleCoreTime,
-            multiCoreTime,
-            singleCoreOperations: SINGLE_CORE_OPERATIONS,
-            multiCoreOperations: MULTI_CORE_OPERATIONS,
-            cpuInfo: cpuInfo,
-        });
-
-        // printScoreTable(JSON.parse(response).data);
+        console.log("\x1B[A\x1B[K\nFinal Result");
+        console.table(consoleResult);
 
         // input any key to exit
         await askAsync("\nPress enter key to exit...");
