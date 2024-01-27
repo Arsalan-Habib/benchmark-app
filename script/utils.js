@@ -1,6 +1,11 @@
 const readline = require("node:readline/promises");
-const https = require("https");
+const axios = require("axios");
 const { MULTI_CORE_WEIGHT, DIVISION_FACTOR } = require("./parameters");
+const API_BASE_URL = "https://api.score.benchmark.dev";
+
+const api = axios.create({
+    baseURL: API_BASE_URL,
+});
 
 // util wrapper over readline.question to add isRequired support.
 const askAsync = async (query, isRequired) => {
@@ -24,67 +29,13 @@ const askAsync = async (query, isRequired) => {
     return answer;
 };
 
-// Function to print the score leaderboard.
-function printScoreTable(data) {
-    // Header
-    console.log("____________________________________________________________");
-    console.log("| Position | Username  | Single Core (s) | Multi Core (s)  |");
-    console.log("____________________________________________________________");
-
-    // Data rows
-    data.forEach((item, index) => {
-        const singleCoreSeconds = (item.score.singleCoreScore / 1e9).toFixed(3);
-        const multiCoreSeconds = (item.score.multiCoreScore / 1e9).toFixed(3);
-        console.log(
-            `|${index + 1}\t   | ${item.username.padEnd(
-                10
-            )}   | ${singleCoreSeconds.padStart(
-                10
-            )}   | ${multiCoreSeconds.padStart(10)} |`
-        );
-    });
-
-    // Footer
-    console.log(
-        "_____________________________________________________________"
-    );
-}
-
 // Function to hit score api endpoint
 const sendScoreUpdate = async (username, score) => {
-    const data = JSON.stringify({ username, score });
-
-    const options = {
-        hostname: "dechains-computing-benchmark.herokuapp.com",
-        // port: 80,
-        path: "/submit-score",
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Content-Length": Buffer.byteLength(data),
-        },
-    };
-
-    return new Promise((resolve, reject) => {
-        const req = https.request(options, (res) => {
-            let data = "";
-
-            res.on("data", (chunk) => {
-                data += chunk;
-            });
-
-            res.on("end", () => {
-                resolve(data);
-            });
-        });
-
-        req.on("error", (error) => {
-            reject(error);
-        });
-
-        req.write(data);
-        req.end();
+    const { data } = await api.post("/score", {
+        username,
+        score,
     });
+    return data;
 };
 
 function calculateFinalScore(
@@ -109,14 +60,20 @@ function calculateFinalScore(
         MULTI_CORE_WEIGHT; // Dividing by total weight (1 + MULTI_CORE_WEIGHT)
 
     // Dividing by division factor to normalize the score.
-    const normalizedScore = combinedScore / (DIVISION_FACTOR || 1);
+    const overallScore = combinedScore / (DIVISION_FACTOR || 1);
 
-    return normalizedScore;
+    const singleCoreScore = singleCoreOpsPerSecond / (DIVISION_FACTOR || 1);
+    const multiCoreScore = multiCoreOpsPerSecond / (DIVISION_FACTOR || 1);
+
+    return {
+        overallScore,
+        singleCoreScore,
+        multiCoreScore,
+    };
 }
 
 module.exports = {
     askAsync,
-    printScoreTable,
     sendScoreUpdate,
     calculateFinalScore,
 };
