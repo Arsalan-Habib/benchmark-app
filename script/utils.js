@@ -92,7 +92,25 @@ function calculateFinalScore(
     totalSingleCoreOperations,
     totalMultiCoreOperations
 ) {
-    return (singleCoreTime + multiCoreTime) / 2;
+    // Calculating operations per second
+    const singleCoreOpsPerSecond =
+        totalSingleCoreOperations / (singleCoreTime / 1e9);
+    const multiCoreOpsPerSecond =
+        totalMultiCoreOperations / (multiCoreTime / 1e9);
+
+    // Applying weights: 1 for single core, whatever is specified for multi core from parameters.js
+    const weightedSingleCoreScore = singleCoreOpsPerSecond;
+    const weightedMultiCoreScore = multiCoreOpsPerSecond * MULTI_CORE_WEIGHT;
+
+    // Calculate combined score
+    const combinedScore =
+        (weightedSingleCoreScore + weightedMultiCoreScore) / 1 +
+        MULTI_CORE_WEIGHT; // Dividing by total weight (1 + MULTI_CORE_WEIGHT)
+
+    // Dividing by division factor to normalize the score.
+    const normalizedScore = combinedScore / (DIVISION_FACTOR || 1);
+
+    return normalizedScore;
 }
 
 module.exports = {
