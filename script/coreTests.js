@@ -6,6 +6,8 @@ const { THREADS_PER_CORE } = require("./parameters");
 function singleCoreTest(totalOperations) {
     const hrStartTime = process.hrtime();
 
+    console.log("\nRunning Single Core Test...");
+
     let progressInterval = totalOperations / 100; // for updating progress every 1% of the total operations.
 
     for (let i = 0; i < totalOperations; i++) {
@@ -23,8 +25,11 @@ function singleCoreTest(totalOperations) {
             );
         }
     }
-    // Clear the progress line once done
-    process.stdout.write("".padEnd(50, " ") + "\r");
+
+    // Clear current line, then move cursor up one line and clear that line.
+    // \x1B[A is an ANSI escape code that moves the cursor up one line.
+    // \x1B[K clears the line where the cursor currently is.
+    process.stdout.write("\x1B[K\x1B[A\x1B[K");
 
     const end = process.hrtime(hrStartTime);
 
