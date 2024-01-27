@@ -2,6 +2,8 @@ const { parentPort, workerData } = require("worker_threads");
 
 let progressInterval = workerData.operationsPerCore / 100;
 
+const hrStartTime = process.hrtime();
+
 for (let i = 0; i < workerData.operationsPerCore; i++) {
     let num1 = Math.floor(Math.random() * 10) + 1;
     let num2 = Math.floor(Math.random() * 10) + 1;
@@ -15,4 +17,9 @@ for (let i = 0; i < workerData.operationsPerCore; i++) {
         });
     }
 }
-parentPort.postMessage(true);
+const end = process.hrtime(hrStartTime);
+
+// returning the total time taken in nanoseconds.
+const totalTime = end[0] * 1e9 + end[1];
+
+parentPort.postMessage(totalTime);
