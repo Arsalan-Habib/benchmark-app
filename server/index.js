@@ -2,11 +2,9 @@ const express = require("express");
 // const sqlite3 = require("sqlite3").verbose();
 // const db = new sqlite3.Database("database.db");
 
-const DISCORD_APPLICATION_ID = "1195324846691864696";
-const DISCORD_PUBLIC_KEY =
-    "dd945e9cf7d863f74fd20890dc94104523f2065ba3c73f3ad2fca6e810ac9198";
-const DISCORD_BOT_TOKEN =
-    "MTE5NTMyNDg0NjY5MTg2NDY5Ng.Gh01xe.GIyaUd10pb7GOuzSup1_SHYgeVWeBMkKHXZ8Lc";
+const DISCORD_APPLICATION_ID = process.env.DISCORD_APPLICATION_ID;
+const DISCORD_PUBLIC_KEY = process.env.DISCORD_PUBLIC_KEY;
+const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 
 // using in memory db for simplicity.
 const db = {};
@@ -42,6 +40,11 @@ app.get("/", (req, res) => {
     return res.status(200).json({
         message: "Leaderboard fetched successfully!",
         data: leaderboard,
+        variables: {
+            DISCORD_APPLICATION_ID,
+            DISCORD_PUBLIC_KEY,
+            DISCORD_BOT_TOKEN,
+        },
     });
 });
 
