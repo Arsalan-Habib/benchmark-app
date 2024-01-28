@@ -17,9 +17,6 @@ async function connectDB() {
         // Ensures that the client will close when you finish/error
         await mongoose.disconnect();
         console.log(err);
-    } finally {
-        // Ensures that the client will close when you finish/error
-        await mongoose.disconnect();
     }
 }
 
