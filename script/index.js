@@ -46,9 +46,11 @@ const main = async () => {
                 multiCoreTime,
                 singleCoreOperations: SINGLE_CORE_OPERATIONS,
                 multiCoreOperations: MULTI_CORE_OPERATIONS,
-                cpuInfo: cpuInfo,
+                processor: cpuInfo.manufacturer + " " + cpuInfo.brand,
+                processorCores: cpuInfo.cores,
             });
-            rank = response.rank;
+
+            rank = response.data.rank;
         } catch (error) {
             console.error(
                 "An error occurred while sending score:",
